@@ -18,7 +18,7 @@
     --Dark-Pink: #500035;
     --Dark-Purple: #23024E;
     --Mid-Grey: #8996A0;
-    --ma:#000428;
+    --Black:#000000;
 }
 *,
 *::before,
@@ -32,7 +32,7 @@ html {
 }
 
 body {
-    background: var(--ma);
+    background: var(--White);
     position: relative;
     height: 100%;
     overflow: hidden;
@@ -104,7 +104,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--White);
+    color: var(--Black);
 }
 
 h2 {
@@ -114,7 +114,7 @@ h2 {
     font-family: inherit;
     display: block;
     width: 100%;
-    color: var(--White);
+    color: var(--Black);
 }
 
 h3 {
@@ -133,7 +133,7 @@ p {
     font-weight: 300;
     display: block;
     width: 100%;
-    color: var(--White);
+    color: #000000;
 }
 
 .loading-bar {
@@ -142,7 +142,7 @@ p {
     width: 100%;
     height: 2px;
     z-index: 99;
-    background: #ffffff;
+    background: var(--Black);
     transform: scaleX(0);
     transition: transform 0.5s;
     transform-origin: top left;
@@ -155,55 +155,39 @@ p {
 }
 
 .central {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    position: relative;
-    padding: 0 50px;
+    text-align: center; /* Centra el contenido horizontalmente */
+    padding: 60px; /* Añade un poco de espacio alrededor del contenido */
+    box-sizing: border-box; /* Incluye el relleno en el ancho y alto total */
 }
 
 .content-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto; 
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
-    position: relative;
+    align-items: flex-start;
+    max-width: 800px; /* Asegúrate de que esto sea suficiente para que la animación y los textos quepan */
+    margin: 0 auto; /* Centra el contenedor en la página */
+    padding-left: 20px; /* añade espacio a la izquierda */
+    padding-right: 20px; /* añade espacio a la derecha */
 }
 
-
-.text {
-    color: #ffffff; 
+.left-texts {
+    position: absolute; /* Posiciona los textos de manera absoluta */
+    top: 50%; /* Empieza en la mitad del contenedor */
+    left: 20%;
+    transform: translateY(-50%); /* Centra verticalmente */
+    color: var(--Black);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.text-top-left, .text-top-right {
-    position: absolute;
-    top: 10px;
+.right-texts {
+    position: absolute; /* Posiciona los textos de manera absoluta */
+    top: 50%; /* Empieza en la mitad del contenedor */
+    margin-left: 900px;
+    transform: translateY(-50%); /* Centra verticalmente */
+    color: var(--Black);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
-
-.text-top-left {
-    left: 50px;
-}
-
-.text-top-right {
-    right: 50px;
-}
-
-
-.text-bottom-left, .text-bottom-right {
-    position: absolute;
-    bottom: 10px; 
-}
-
-.text-bottom-left {
-    left: 50px; 
-}
-
-.text-bottom-right {
-    right: 50px;
-}
-

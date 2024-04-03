@@ -152,8 +152,14 @@ const sizes = {
 /**
  * Scroll
  */
-let scrollY = window.scrollY
-let currentSection = 0
+/**
+ * Scroll
+ */
+let scrollY = window.scrollY;
+let currentSection = 0;
+let isScrolling = false; 
+let lastScrollTime = Date.now(); 
+let scrollVelocity = 0; 
 
 const transformDonut = [
     {
@@ -174,42 +180,60 @@ const transformDonut = [
     },
 ];
 
-window.addEventListener('scroll', () => {
+// Función para manejar el scroll
+const handleScroll = () => {
     scrollY = window.scrollY;
-    const newSection = Math.round(scrollY / sizes.height);
+    isScrolling = true; // Indica que el usuario está haciendo scroll
 
-    if (newSection != currentSection) {
-        currentSection = newSection;
+    // Calcula la velocidad de scroll
+    const currentTime = Date.now();
+    const timeDiff = currentTime - lastScrollTime;
+    const distance = Math.abs(scrollY - lastScrollY);
+    scrollVelocity = distance / timeDiff; // Pixels por milisegundo
+    lastScrollTime = currentTime;
+    lastScrollY = scrollY;
 
-        if (donut) {
-            gsap.to(donut.rotation, {
-                y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
-                duration: 1.5,
-                ease: 'power2.inOut'
-            });
+    // Espera 50ms antes de actualizar la sección actual
+    setTimeout(() => {
+        isScrolling = false; // Indica que el scroll se ha detenido
+        const newSection = Math.round(scrollY / sizes.height);
+        
+        if (newSection != currentSection) {
+            currentSection = newSection;
 
-            gsap.to(donut.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: transformDonut[currentSection].positionX
-            });
+            if (donut) {
+                // Ajusta la duración de las transiciones basándose en la velocidad de scroll
+                const duration = 1.5 / scrollVelocity; // Ajusta este factor según sea necesario
 
-            // posición de la sombra en el eje X
-            gsap.to(sphereShadow.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: transformDonut[currentSection].positionX - 0.2
-            });
+                gsap.to(donut.rotation, {
+                    y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
+                    duration: duration,
+                    ease: 'power2.inOut'
+                });
 
-            // Aquí también deberías animar la posición Y de la sombra si el "donut" se está moviendo en Y
-            gsap.to(sphereShadow.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: donut.position.y - 0.5 // Ajusta esto según la posición y la altura del "donut"
-            });
+                gsap.to(donut.position, {
+                    duration: duration,
+                    ease: 'power2.inOut',
+                    x: transformDonut[currentSection].positionX
+                });
+
+                gsap.to(sphereShadow.position, {
+                    duration: duration,
+                    ease: 'power2.inOut',
+                    x: transformDonut[currentSection].positionX - 0.2
+                });
+
+                gsap.to(sphereShadow.position, {
+                    duration: duration,
+                    ease: 'power2.inOut',
+                    y: donut.position.y - 0.5 // Ajusta esto según la posición y la altura del "donut"
+                });
+            }
         }
-    }
-})
+    }, 100); // Espera 50ms después del último evento de scroll antes de actualizar la sección actual
+};
+
+window.addEventListener('scroll', handleScroll);
 
 /**
  * Camera
@@ -267,16 +291,14 @@ window.onbeforeunload = function () {
 
 let lastScrollY = window.scrollY;
 
-window.addEventListener("scroll", () => {
-  const currentScrollY = window.scrollY;
+window.addEventListener('resize', onWindowResize, false);
 
-  if (currentScrollY > lastScrollY) {
+function onWindowResize() {
+    // Actualizar las proporciones de la cámara
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-    document.querySelector(".nav-wrapper").style.top = "-100px"; // altura de tu navbar es de 100px
-  } else {
-
-    document.querySelector(".nav-wrapper").style.top = "0";
-  }
-
-  lastScrollY = currentScrollY; // Actualiza la última posición de scroll
-});
+    // Actualizar el tamaño del renderizador
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+}
