@@ -1,4 +1,3 @@
-
 /**
  * Base
  */
@@ -108,14 +107,14 @@ gltfLoader.load(
 
         donut = gltf.scene
 
-        const radius = 0.0080
+        const radius = 0.0090
 
         donut.position.x = 1.5;
 
         donut.rotation.x = -0.35 //hacer la inclinacion es 0.5 hacia abajo
         donut.rotation.y = -2
 
-        donut.position.y = -0.5000
+        donut.position.y = 0.5
 
         donut.scale.set(radius, radius, radius)
 
@@ -141,25 +140,53 @@ directionalLight.position.set(0, 5, 5)
 directionalLight.castShadow = true
 scene.add(directionalLight)
 
+// Opacidad para los textos al momento de scrolear
+// const adjustCanvasOpacityOnScroll = () => {
+//     const canvasElement = document.querySelector('canvas.webgl');
+     
+//     const textApproachPoint = 350; // Ejemplo de valor, ajusta según sea necesario
+   
+//     if (isMobile()) {
+//        if (scrollDistance < textApproachPoint) {
+//          canvasElement.style.opacity = 1;
+//        } else {
+//          const opacity = Math.max(0.50, 1 - (scrollDistance - textApproachPoint) / 300);
+//          canvasElement.style.opacity = opacity;
+//        }
+//     }
+//    };
+   
+
+//    window.addEventListener('scroll', adjustCanvasOpacityOnScroll);
+
 /**
  * Sizes
  */
 const sizes = {
     width: window.innerWidth,
-    height: window.innerHeight
-}
+    height: window.innerHeight,
+    aspectRatio: window.innerWidth / window.innerHeight,
+};
 
 /**
- * Scroll
+ * Resize event
  */
+window.addEventListener('resize', () => {
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+    sizes.aspectRatio = window.innerWidth / window.innerHeight;
+
+    camera.aspect = sizes.aspectRatio;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(sizes.width, sizes.height);
+});
+
 /**
  * Scroll
  */
 let scrollY = window.scrollY;
 let currentSection = 0;
-let isScrolling = false; 
-let lastScrollTime = Date.now(); 
-let scrollVelocity = 0; 
 
 const transformDonut = [
     {
@@ -180,69 +207,73 @@ const transformDonut = [
     },
 ];
 
-// Función para manejar el scroll
-const handleScroll = () => {
-    scrollY = window.scrollY;
-    isScrolling = true; // Indica que el usuario está haciendo scroll
-
-    // Calcula la velocidad de scroll
-    const currentTime = Date.now();
-    const timeDiff = currentTime - lastScrollTime;
-    const distance = Math.abs(scrollY - lastScrollY);
-    scrollVelocity = distance / timeDiff; // Pixels por milisegundo
-    lastScrollTime = currentTime;
-    lastScrollY = scrollY;
-
-    // Espera 50ms antes de actualizar la sección actual
-    setTimeout(() => {
-        isScrolling = false; // Indica que el scroll se ha detenido
-        const newSection = Math.round(scrollY / sizes.height);
-        
-        if (newSection != currentSection) {
-            currentSection = newSection;
-
-            if (donut) {
-                // Ajusta la duración de las transiciones basándose en la velocidad de scroll
-                const duration = 1.5 / scrollVelocity; // Ajusta este factor según sea necesario
-
-                gsap.to(donut.rotation, {
-                    y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
-                    duration: duration,
-                    ease: 'power2.inOut'
-                });
-
-                gsap.to(donut.position, {
-                    duration: duration,
-                    ease: 'power2.inOut',
-                    x: transformDonut[currentSection].positionX
-                });
-
-                gsap.to(sphereShadow.position, {
-                    duration: duration,
-                    ease: 'power2.inOut',
-                    x: transformDonut[currentSection].positionX - 0.2
-                });
-
-                gsap.to(sphereShadow.position, {
-                    duration: duration,
-                    ease: 'power2.inOut',
-                    y: donut.position.y - 0.5 // Ajusta esto según la posición y la altura del "donut"
-                });
-            }
+// Función de debounce
+const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
         }
-    }, 100); // Espera 50ms después del último evento de scroll antes de actualizar la sección actual
+        timeoutId = setTimeout(() => {
+            func.apply(null, args);
+        }, delay);
+    };
 };
 
-window.addEventListener('scroll', handleScroll);
+// Modifica la función handleScroll para que no aplique movimientos en pantallas móviles
+const handleScroll = () => {
+    // Evita que el donut se mueva con el scroll en pantallas móviles
+    if (isMobile()) {
+        return;
+    }
+
+    scrollY = window.scrollY;
+    const newSection = Math.round(scrollY / sizes.height);
+
+    if (newSection != currentSection) {
+        currentSection = newSection;
+
+        if (donut) {
+            gsap.to(donut.rotation, {
+                y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
+                duration: 1.5,
+                ease: 'power2.inOut'
+            });
+
+            gsap.to(donut.position, {
+                duration: 1.5,
+                ease: 'power2.inOut',
+                x: transformDonut[currentSection].positionX
+            });
+
+            gsap.to(sphereShadow.position, {
+                duration: 1.5,
+                ease: 'power2.inOut',
+                x: transformDonut[currentSection].positionX - 0.2
+            });
+
+            gsap.to(sphereShadow.position, {
+                duration: 1.5,
+                ease: 'power2.inOut',
+                y: donut.position.y - 0.5
+            });
+        }
+    }
+};
+
+const handleScrollDebounced = debounce(handleScroll, 100);
+
+window.addEventListener('scroll', handleScrollDebounced);
 
 /**
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 1000)
-camera.position.z = 5
+const aspectRatio = sizes.width / sizes.height;
+const camera = new THREE.PerspectiveCamera(35, aspectRatio, 0.1, 1000);
+camera.position.z = 5;
 
-scene.add(camera)
+scene.add(camera);
 
 /**
  * Renderer
@@ -273,10 +304,8 @@ const tick = () => {
          donut.position.y = Math.sin(elapsedTime * 0.5) * 0.05 - 0.7
     }
 
-    // Render
     renderer.render(scene, camera)
 
-    // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
 
@@ -290,15 +319,35 @@ window.onbeforeunload = function () {
 }
 
 let lastScrollY = window.scrollY;
+/**
+ * Definiciones de la segunda Funciones de Animación
+ */
+const isMobile = () => window.innerWidth < 768;
 
-window.addEventListener('resize', onWindowResize, false);
+const animateDonutOnMobile = () => {
+  if (!donut || !sphereShadow) return;
 
-function onWindowResize() {
-    // Actualizar las proporciones de la cámara
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+  donut.position.set(0, 0.5, 0);
+  sphereShadow.position.set(donut.position.x, -1, donut.position.z);
 
-    // Actualizar el tamaño del renderizador
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-}
+  // Cancela cualquier animación previa
+  gsap.killTweensOf(donut.rotation);
+  gsap.killTweensOf(sphereShadow.position);
+
+  // Anima la rotación del donut
+  gsap.to(donut.rotation, {
+    y: "+=" + (Math.PI * 2 * 2), // Rota 360 grados en el eje Y, 2 veces
+    duration: 8,
+    ease: "none",
+  });
+};
+
+
+const updateDonutAnimation = () => {
+  if (isMobile()) {
+    animateDonutOnMobile();
+  }
+};
+
+window.addEventListener('resize', debounce(updateDonutAnimation, 250));
+updateDonutAnimation();
