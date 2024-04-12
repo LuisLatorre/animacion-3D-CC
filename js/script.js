@@ -221,49 +221,6 @@ const debounce = (func, delay) => {
 };
 
 // Modifica la función handleScroll para que no aplique movimientos en pantallas móviles
-const handleScroll = () => {
-    // Evita que el donut se mueva con el scroll en pantallas móviles
-    if (isMobile()) {
-        return;
-    }
-
-    scrollY = window.scrollY;
-    const newSection = Math.round(scrollY / sizes.height);
-
-    if (newSection != currentSection) {
-        currentSection = newSection;
-
-        if (donut) {
-            gsap.to(donut.rotation, {
-                y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
-                duration: 1.5,
-                ease: 'power2.inOut'
-            });
-
-            gsap.to(donut.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: transformDonut[currentSection].positionX
-            });
-
-            gsap.to(sphereShadow.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: transformDonut[currentSection].positionX - 0.2
-            });
-
-            gsap.to(sphereShadow.position, {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: donut.position.y - 0.5
-            });
-        }
-    }
-};
-
-const handleScrollDebounced = debounce(handleScroll, 100);
-
-window.addEventListener('scroll', handleScrollDebounced);
 
 /**
  * Camera
@@ -324,30 +281,88 @@ let lastScrollY = window.scrollY;
  */
 const isMobile = () => window.innerWidth < 768;
 
-const animateDonutOnMobile = () => {
-  if (!donut || !sphereShadow) return;
+// Esta función activa la animación para dispositivos móviles
+const activateMobileAnimation = () => {
+    if (!donut || !sphereShadow) return;
 
-  donut.position.set(0, 0.5, 0);
-  sphereShadow.position.set(donut.position.x, -1, donut.position.z);
+        donut.position.set(0, 0.5, 0);
+        sphereShadow.position.set(donut.position.x, -1, donut.position.z);
 
-  // Cancela cualquier animación previa
-  gsap.killTweensOf(donut.rotation);
-  gsap.killTweensOf(sphereShadow.position);
+        // Cancela cualquier animación previa
+        gsap.killTweensOf(donut.rotation);
+        gsap.killTweensOf(sphereShadow.position);
 
-  // Anima la rotación del donut
-  gsap.to(donut.rotation, {
-    y: "+=" + (Math.PI * 2 * 2), // Rota 360 grados en el eje Y, 2 veces
-    duration: 8,
-    ease: "none",
-  });
+        // Anima la rotación del donut
+        gsap.to(donut.rotation, {
+            y: "+=" + (Math.PI * 2 * 2), // Rota 360 grados en el eje Y, 2 veces
+            duration: 8,
+            ease: "none",
+    });
+    console.log('Activating mobile animation');
+    // Puedes incluir aquí el código específico para iniciar la segunda animación
 };
 
-
-const updateDonutAnimation = () => {
-  if (isMobile()) {
-    animateDonutOnMobile();
-  }
+// Esta función activa la animación para pantallas más grandes
+const activateDesktopAnimation = () => {
+    const handleScroll = () => {
+        // Evita que el donut se mueva con el scroll en pantallas móviles
+        if (isMobile()) {
+            return;
+        }
+    
+        scrollY = window.scrollY;
+        const newSection = Math.round(scrollY / sizes.height);
+    
+        if (newSection != currentSection) {
+            currentSection = newSection;
+    
+            if (donut) {
+                gsap.to(donut.rotation, {
+                    y: "+=" + Math.PI * 1 * (newSection > currentSection ? 2 : -2), // Gira 90 grados
+                    duration: 1.5,
+                    ease: 'power2.inOut'
+                });
+    
+                gsap.to(donut.position, {
+                    duration: 1.5,
+                    ease: 'power2.inOut',
+                    x: transformDonut[currentSection].positionX
+                });
+    
+                gsap.to(sphereShadow.position, {
+                    duration: 1.5,
+                    ease: 'power2.inOut',
+                    x: transformDonut[currentSection].positionX - 0.2
+                });
+    
+                gsap.to(sphereShadow.position, {
+                    duration: 1.5,
+                    ease: 'power2.inOut',
+                    y: donut.position.y - 0.5
+                });
+            }
+        }
+    };
+    
+    const handleScrollDebounced = debounce(handleScroll, 100);
+    
+    window.addEventListener('scroll', handleScrollDebounced);
+    
+    console.log('Activating desktop animation');
+    // Puedes incluir aquí el código específico para iniciar la primera animación
 };
 
-window.addEventListener('resize', debounce(updateDonutAnimation, 250));
-updateDonutAnimation();
+// Función para determinar y ejecutar la animación correspondiente
+const initializeAppropriateAnimation = () => {
+    if (isMobile()) {
+        activateMobileAnimation();
+    } else {
+        activateDesktopAnimation();
+    }
+};
+
+// Evento que se ejecuta cuando la página ha cargado completamente
+window.addEventListener('load', initializeAppropriateAnimation);
+
+// También debes manejar el evento de redimensionamiento para ajustar las animaciones si el tamaño de la pantalla cambia (por ejemplo, cuando el dispositivo cambia de orientación)
+window.addEventListener('resize', debounce(initializeAppropriateAnimation, 250));
