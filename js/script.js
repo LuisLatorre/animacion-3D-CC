@@ -98,27 +98,27 @@ scene.add(overlay)
 /**
  * GLTF Model
  */
-let donut = null
+let donut = null;
 
 gltfLoader.load(
     './assets/Pantalla_12x6.glb',
     (gltf) => {
-        console.log(gltf);
+        donut = gltf.scene;
+        const radius = 0.0090;
+        donut.scale.set(radius, radius, radius);
 
-        donut = gltf.scene
+        if (isMobile()) {
+            donut.rotation.set(-0.35, -2, 0);
+            scene.add(donut);
 
-        const radius = 0.0090
+            activateMobileAnimation();
 
-        donut.position.x = 1.5;
+        } else {
+            donut.position.set(1.5, 0.5, 0);
+            donut.rotation.set(-0.35, -2, 0);
 
-        donut.rotation.x = -0.35 //hacer la inclinacion es 0.5 hacia abajo
-        donut.rotation.y = -2
-
-        donut.position.y = 0.5
-
-        donut.scale.set(radius, radius, radius)
-
-        scene.add(donut)
+            scene.add(donut);
+        }
     },
     (progress) => {
         console.log(progress);
@@ -126,7 +126,7 @@ gltfLoader.load(
     (error) => {
         console.error(error);
     }
-)
+);
 
 /**
  * Light
@@ -140,24 +140,6 @@ directionalLight.position.set(0, 5, 5)
 directionalLight.castShadow = true
 scene.add(directionalLight)
 
-// Opacidad para los textos al momento de scrolear
-// const adjustCanvasOpacityOnScroll = () => {
-//     const canvasElement = document.querySelector('canvas.webgl');
-     
-//     const textApproachPoint = 350; // Ejemplo de valor, ajusta según sea necesario
-   
-//     if (isMobile()) {
-//        if (scrollDistance < textApproachPoint) {
-//          canvasElement.style.opacity = 1;
-//        } else {
-//          const opacity = Math.max(0.50, 1 - (scrollDistance - textApproachPoint) / 300);
-//          canvasElement.style.opacity = opacity;
-//        }
-//     }
-//    };
-   
-
-//    window.addEventListener('scroll', adjustCanvasOpacityOnScroll);
 
 /**
  * Sizes
@@ -220,8 +202,6 @@ const debounce = (func, delay) => {
     };
 };
 
-// Modifica la función handleScroll para que no aplique movimientos en pantallas móviles
-
 /**
  * Camera
  */
@@ -276,9 +256,7 @@ window.onbeforeunload = function () {
 }
 
 let lastScrollY = window.scrollY;
-/**
- * Definiciones de la segunda Funciones de Animación
- */
+
 const isMobile = () => window.innerWidth < 768;
 
 // Esta función activa la animación para dispositivos móviles
@@ -298,8 +276,6 @@ const activateMobileAnimation = () => {
             duration: 8,
             ease: "none",
     });
-    console.log('Activating mobile animation');
-    // Puedes incluir aquí el código específico para iniciar la segunda animación
 };
 
 // Esta función activa la animación para pantallas más grandes
@@ -347,9 +323,6 @@ const activateDesktopAnimation = () => {
     const handleScrollDebounced = debounce(handleScroll, 100);
     
     window.addEventListener('scroll', handleScrollDebounced);
-    
-    console.log('Activating desktop animation');
-    // Puedes incluir aquí el código específico para iniciar la primera animación
 };
 
 // Función para determinar y ejecutar la animación correspondiente
