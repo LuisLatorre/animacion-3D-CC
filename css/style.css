@@ -142,24 +142,6 @@ p {
     color: #000000;
 }
 
-.loading-bar {
-    position: fixed;
-    top: 50%;
-    width: 100%;
-    height: 2px;
-    z-index: 99;
-    background: var(--Black);
-    transform: scaleX(0);
-    transition: transform 0.5s;
-    transform-origin: top left;
-}
-
-.loading-bar.ended {
-    transform: scaleX(0);
-    transform-origin: 100% 0;
-    transition: transform 1.5s ease-in-out;
-}
-
 .central {
     text-align: center; /* Centra el contenido horizontalmente */
     padding: 60px; /* Añade un poco de espacio alrededor del contenido */

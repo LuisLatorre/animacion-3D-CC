@@ -12,33 +12,13 @@ const bodyElement = document.querySelector('body')
 const loadingManager = new THREE.LoadingManager(
     () => {
         window.setTimeout(() => {
-            gsap.to(overlayMaterial.uniforms.uAlpha, {
-                duration: 3,
-                value: 0,
-                delay: 1
-            })
-            gsap.to(overlayMaterial.uniforms.uAlpha, {
-                duration: 3,
-                value: 0,
-                delay: 1
-            })
 
             loadingBarElement.classList.add('ended')
             bodyElement.classList.add('loaded')
-            loadingBarElement.style.transform = ''
-
         }, 500)
     },
-    (itemUrl, itemsLoaded, itemsTotal) => {
-        console.log(itemUrl, itemsLoaded, itemsTotal)
-        const progressRatio = itemsLoaded / itemsTotal
-        loadingBarElement.style.transform = `scaleX(${progressRatio})`
-        console.log(progressRatio)
-    },
-    () => {
-
-    }
-)
+    () => {}
+);
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 
 /**
@@ -81,16 +61,15 @@ const overlayMaterial = new THREE.ShaderMaterial({
         uniform float uAlpha;
         void main() {
             gl_FragColor = vec4(0.0, 0.0, 0.0, uAlpha);
-            // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     `,
     uniforms: {
         uAlpha: {
-            value: 1.0
+            value: 0.0
         }
     },
     transparent: true
-})
+});
 const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial);
 scene.add(overlay)
 
@@ -281,7 +260,6 @@ const activateMobileAnimation = () => {
 // Esta función activa la animación para pantallas más grandes
 const activateDesktopAnimation = () => {
     const handleScroll = () => {
-        // Evita que el donut se mueva con el scroll en pantallas móviles
         if (isMobile()) {
             return;
         }
